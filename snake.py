@@ -1,7 +1,3 @@
-# Notes:
-# - I just normalized inputs and not sure if that helped or not, haven't trained a good one since
-# - Another change I'm not sure about: speciation limits, I think fewer species better, got a good one with zero speciation but that was before change above too
-
 import pygame
 import random
 import math
@@ -11,21 +7,22 @@ from jaal import Jaal
 from jaal.datasets import load_got
 import pandas as pd
 
-WIDTH = 600
-HEIGHT = 600
-PSIZE = 8
+WIDTH = 400
+HEIGHT = 400
+PSIZE = 10
 
 NUM_INPUT_NODES = 6
 NUM_OUTPUT_NODES = 3
 GENERATION_POPULATION_LIMIT = 100
-SPECIES_LIMIT = 1
+SPECIES_LIMIT = 3
 GENERATION_KEEP_CONSTANT = 0.16
+FRAMES_UNTIL_STARVATION = 300
 
 pwidth = WIDTH // PSIZE
 pheight = HEIGHT // PSIZE
 
-FRAMES_UNTIL_STARVATION = 600
 RUNS_PER_DRAWN = 1
+SNAKES_DRAWN = GENERATION_POPULATION_LIMIT
 
 global innovationCounter
 innovationCounter = 0
@@ -35,7 +32,7 @@ global nodeCounter
 nodeCounter = NUM_OUTPUT_NODES + NUM_INPUT_NODES + 1
 
 global species_similarity
-species_similarity = 0.8
+species_similarity = 0.9
 
 play = True
 
@@ -318,18 +315,6 @@ def mutate(p):
     chosen_mutation = random.choices(mutation_options, weights=mutation_weights, k=1)[0]
     chosen_mutation(p)
 
-    # rand = random.randint(0, 4)
-    # if 0 <= rand <= 40:
-    #     mutate_weight_random(p)
-    # elif 41 <= rand <= 80:
-    #     mutate_weight_shift(p)
-    # elif 81 <= rand <= 85:
-    #     mutate_edge(p)
-    # elif 86 <= rand <= 90:
-    #     mutate_node(p)
-    # else:
-    #     mutate_enable_disable(p)
-
 # randomly deciding that if two players both have similar edges than they are same species
 def sameSpecies(p1, p2):
 
@@ -384,7 +369,7 @@ def next_generation(players):
         mommy = random.choice(s)
         daddy = random.choice(s)
         baby = cross_over(mommy, daddy)
-        if random.randint(0,1) == 1: #1/2 chance of mutating baby after cross-over
+        if random.randint(1,1) == 1: #1/1 chance of mutating baby after cross-over
             mutate(baby)
         next_gen.append(baby)
         s.append(baby)
@@ -402,38 +387,6 @@ def get_snake_move(p):
     distance_straight = distance_right = distance_left = 0
     distance_straight_wall = distance_right_wall = distance_left_wall = 0
 
-    # if p["direction"] == "right":
-    #     distance_straight = fruit[0] - head[0] / pwidth
-    #     distance_left = head[1] - fruit[1] / pheight
-    #     distance_right = fruit[1] - head[1] / pheight
-
-    #     distance_straight_wall = pwidth - head[0] / pwidth
-    #     distance_left_wall = head[1] / pheight
-    #     distance_right_wall = pheight - head[1] / pheight
-    # elif p["direction"] == "left":
-    #     distance_straight = head[0] - fruit[0] / pwidth
-    #     distance_left = fruit[1] - head[1] / pheight
-    #     distance_right = head[1] - fruit[1] / pheight
-
-    #     distance_straight_wall = head[0] / pwidth
-    #     distance_left_wall = pheight - head[1]
-    #     distance_right_wall = head[1] / pheight
-    # elif p["direction"] == "up":
-    #     distance_straight = head[1] - fruit[1]
-    #     distance_left = head[0] - fruit[0] / pwidth
-    #     distance_right = fruit[0] - head[0] / pwidth
-
-    #     distance_straight_wall = head[1]
-    #     distance_left_wall = head[0] / pwidth
-    #     distance_right_wall = pwidth - head[0] / pwidth
-    # elif p["direction"] == "down":
-    #     distance_straight = fruit[1] - head[1]
-    #     distance_left = fruit[0] - head[0] / pwidth
-    #     distance_right = head[0] - fruit[0] / pwidth
-
-    #     distance_straight_wall = pheight - head[1] / pheight
-    #     distance_left_wall = pwidth - head[0] / pwidth
-    #     distance_right_wall = head[0] / pwidth
     if p["direction"] == "right":
         distance_straight = fruit[0] - head[0]
         distance_left = head[1] - fruit[1]
@@ -498,63 +451,27 @@ def get_snake_move(p):
         elif p["direction"] == "down":
             p["direction"] = "right"
     
-if play:
 
-    players = [{
-        "positions": [[pwidth - i * PSIZE, pheight // 2] for i in range(10)],
-        "every_discovered_position": [],
-        "fruit_position": generate_fruit(),
-        "direction": "right",
-        "frames_since_last_ate": 0,
-        "dead": False,
-        "fitness": 0,
-        "color": "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)]),
-        "phenotype": s
-    } for s in [makePlayer() for i in range(GENERATION_POPULATION_LIMIT)]]
+def get_snake_results(players):
 
-    pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock = pygame.time.Clock()
     running = True
-
-    runs = 0
-
-while play:
-
-    for p in players:
-        p["dead"] = False
-        p["fitness"] = 0
-
-    runs += 1
     frames = 0
-
-    if runs % RUNS_PER_DRAWN == 0:
-        draw = True
-    else:   
-        draw = False
+    move_set = [[] for p in players]
 
     while running:
 
-        frames += 1
-
-        screen.fill("#000000")
-        move = ""
-
-        # Event handling loop
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == 27:
-                    running = False
-
         alive_players = [p for p in players if p["dead"] == False]
 
-        for p in alive_players:
+        for counter, p in enumerate(players):
+
+            if p["dead"] == True:
+                continue
 
             get_snake_move(p)
 
+            # TODO: replace p["every_discovered_position"] functionality with move_set[counter]
             p["every_discovered_position"].append(p["positions"][0])
+            move_set[counter].append([p["positions"][0], p["fruit_position"]])
 
             if p["direction"] == "up":
                 p["positions"].insert(0, [p["positions"][0][0], p["positions"][0][1] - 1])
@@ -581,31 +498,89 @@ while play:
                 p["frames_since_last_ate"] = 0
                 p["fruit_position"] = generate_fruit()
 
-            for i in range(len(p["positions"])):
-                pygame.draw.rect(screen, p["color"], pygame.Rect(p["positions"][i][0] * PSIZE, p["positions"][i][1] * PSIZE, PSIZE, PSIZE))
-            pygame.draw.rect(screen, p["color"], pygame.Rect(p["fruit_position"][0] * PSIZE, p["fruit_position"][1] * PSIZE, PSIZE, PSIZE))
-
             # Calculate if the snake died
             if p["frames_since_last_ate"] >= FRAMES_UNTIL_STARVATION:
                 p["dead"] = True
             if p["positions"][0][0] < 0 or p["positions"][0][0] > pwidth or p["positions"][0][1] < 0 or p["positions"][0][1] > pheight:
                 p["dead"] = True
 
-        if len(alive_players) == 0:
+        frames += 1
+        if len(alive_players) == 0 or frames > 100000:
             break
 
-        if draw:
-            pygame.display.flip()
-            clock.tick(120)
+    return move_set
 
-        if frames >= 100000: 
-            print("winner!")
-            draw = True
-            continue
+if play:
+
+    players = [{
+        "positions": [[pwidth - i * PSIZE, pheight // 2] for i in range(10)],
+        "every_discovered_position": [],
+        "fruit_position": generate_fruit(),
+        "direction": "right",
+        "frames_since_last_ate": 0,
+        "dead": False,
+        "fitness": 0,
+        "color": "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)]),
+        "phenotype": s
+    } for s in [makePlayer() for i in range(GENERATION_POPULATION_LIMIT)]]
+
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+
+    runs = 0
+
+while play:
+
+    for p in players:
+        p["dead"] = False
+        p["fitness"] = 0
+
+    runs += 1
+    move_set = get_snake_results(players)
 
     sorted_players = sorted(players, key=lambda x: x['fitness'], reverse=True)
     print(f"Run: {runs}, Maximum fitness: {sorted_players[0]['fitness']}, average fitness: {sum([s['fitness'] for s in sorted_players]) // len(sorted_players)}, number of species: {len(speciation(players))}")
 
+    winner_index = -1
+    for i, p in enumerate(players):
+        if p["fitness"] == sorted_players[0]['fitness'] and winner_index == -1:
+            p["color"] = "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+            winner_index = i
+        else:
+            p["color"] = "#999999"
+
+    # Draw all snakes based on move_set generated when forming results
+    # if runs % RUNS_PER_DRAWN == 0:
+    if sorted_players[0]['fitness'] >= 1000:
+
+        while len([m for m in move_set if len(m) > 0]) > 0:
+
+            screen.fill("#000000")
+
+            # Event handling loop
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == 27:
+                        running = False
+
+            # Loop through each player
+            for counter, p in enumerate(move_set):
+
+                if not p:
+                    continue
+
+                # Loop through 10 positions for each player, drawing them and the position of the head's fruit
+                for position_counter, position in enumerate(p):
+                    if position_counter <= 10:
+                        pygame.draw.rect(screen, players[counter]["color"], pygame.Rect(position[0][0] * PSIZE, position[0][1] * PSIZE, PSIZE, PSIZE))
+                pygame.draw.rect(screen, players[counter]["color"], pygame.Rect(p[0][1][0] * PSIZE, p[0][1][1] * PSIZE, PSIZE, PSIZE))
+
+                move_set[counter].pop(0)
+
+            pygame.display.flip()
+            clock.tick(120)
+
     players = next_generation(players)
-
-
