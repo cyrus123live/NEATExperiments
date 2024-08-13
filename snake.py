@@ -7,13 +7,13 @@ from jaal import Jaal
 from jaal.datasets import load_got
 import pandas as pd
 
-WIDTH = 400
-HEIGHT = 400
-PSIZE = 10
+WIDTH = 600
+HEIGHT = 600
+PSIZE = 12
 
 NUM_INPUT_NODES = 6
 NUM_OUTPUT_NODES = 3
-GENERATION_POPULATION_LIMIT = 100
+GENERATION_POPULATION_LIMIT = 300
 SPECIES_LIMIT = 3
 GENERATION_KEEP_CONSTANT = 0.16
 FRAMES_UNTIL_STARVATION = 300
@@ -23,6 +23,7 @@ pheight = HEIGHT // PSIZE
 
 RUNS_PER_DRAWN = 1
 SNAKES_DRAWN = GENERATION_POPULATION_LIMIT
+MIN_FITNESS_TO_DRAW = 20000
 
 global innovationCounter
 innovationCounter = 0
@@ -32,9 +33,12 @@ global nodeCounter
 nodeCounter = NUM_OUTPUT_NODES + NUM_INPUT_NODES + 1
 
 global species_similarity
-species_similarity = 0.9
+species_similarity = 0.95
 
 play = True
+
+def random_color():
+    return "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
 
 def visualize(p):
 
@@ -200,7 +204,7 @@ def cross_over(p1, p2):
         "frames_since_last_ate": 0,
         "dead": False,
         "fitness": 0,
-        "color": "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)]),
+        "color": random_color(),
         "phenotype": {
             "nodes": nodes,
             "edges": new_edges
@@ -334,8 +338,13 @@ def speciation(players):
             if sameSpecies(p, s[0]) and not found_species:
                 s.append(p)
                 found_species = True
+
+                p["color"] = s[0]["color"]
+
         if not found_species:
             species.append([p])
+            if p["color"] in [s[0]["color"] for s in species if s[0] != p]:
+                p["color"] = random_color()
 
     if len(species) > SPECIES_LIMIT:
         global species_similarity
@@ -520,7 +529,7 @@ if play:
         "frames_since_last_ate": 0,
         "dead": False,
         "fitness": 0,
-        "color": "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)]),
+        "color": random_color(),
         "phenotype": s
     } for s in [makePlayer() for i in range(GENERATION_POPULATION_LIMIT)]]
 
@@ -529,6 +538,7 @@ if play:
     clock = pygame.time.Clock()
 
     runs = 0
+    runs_drawn = 0
 
 while play:
 
@@ -536,23 +546,25 @@ while play:
         p["dead"] = False
         p["fitness"] = 0
 
-    runs += 1
     move_set = get_snake_results(players)
 
     sorted_players = sorted(players, key=lambda x: x['fitness'], reverse=True)
-    print(f"Run: {runs}, Maximum fitness: {sorted_players[0]['fitness']}, average fitness: {sum([s['fitness'] for s in sorted_players]) // len(sorted_players)}, number of species: {len(speciation(players))}")
+    print(f"Run: {runs}, Maximum fitness: {sorted_players[0]['fitness']:.1f}, average fitness: {sum([s['fitness'] for s in sorted_players]) // len(sorted_players)}, number of species: {len(speciation(players))}")
 
-    winner_index = -1
-    for i, p in enumerate(players):
-        if p["fitness"] == sorted_players[0]['fitness'] and winner_index == -1:
-            p["color"] = "#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-            winner_index = i
-        else:
-            p["color"] = "#999999"
+    # Add player to hall of fame
+    if sorted_players[0]['fitness'] > 100000:
+        print_out(sorted_players[0])
+
+    # Color winner a separate color
+    # winner_index = -1
+    # for i, p in enumerate(players):
+    #     if p["fitness"] == sorted_players[0]['fitness'] and winner_index == -1:
+    #         p["color"] = p["color"]
+    #         winner_index = i
 
     # Draw all snakes based on move_set generated when forming results
     # if runs % RUNS_PER_DRAWN == 0:
-    if sorted_players[0]['fitness'] >= 1000:
+    if runs_drawn % RUNS_PER_DRAWN == 0 and sorted_players[0]['fitness'] >= MIN_FITNESS_TO_DRAW:
 
         while len([m for m in move_set if len(m) > 0]) > 0:
 
@@ -564,7 +576,7 @@ while play:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == 27:
-                        running = False
+                        break
 
             # Loop through each player
             for counter, p in enumerate(move_set):
@@ -582,5 +594,9 @@ while play:
 
             pygame.display.flip()
             clock.tick(120)
+        screen.fill("#000000")
+        pygame.display.flip()
+        runs_drawn += 1
+    runs += 1
 
     players = next_generation(players)
