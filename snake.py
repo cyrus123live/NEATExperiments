@@ -9,7 +9,7 @@ import pandas as pd
 
 WIDTH = 600
 HEIGHT = 600
-PSIZE = 12
+PSIZE = 15
 
 NUM_INPUT_NODES = 6
 NUM_OUTPUT_NODES = 3
@@ -23,7 +23,7 @@ pheight = HEIGHT // PSIZE
 
 RUNS_PER_DRAWN = 1
 SNAKES_DRAWN = GENERATION_POPULATION_LIMIT
-MIN_FITNESS_TO_DRAW = 20000
+MIN_FITNESS_TO_DRAW = 100
 
 global innovationCounter
 innovationCounter = 0
@@ -339,12 +339,12 @@ def speciation(players):
                 s.append(p)
                 found_species = True
 
-                p["color"] = s[0]["color"]
+                # p["color"] = s[0]["color"]
 
         if not found_species:
             species.append([p])
-            if p["color"] in [s[0]["color"] for s in species if s[0] != p]:
-                p["color"] = random_color()
+            # if p["color"] in [s[0]["color"] for s in species if s[0] != p]:
+            #     p["color"] = random_color()
 
     if len(species) > SPECIES_LIMIT:
         global species_similarity
@@ -556,11 +556,13 @@ while play:
         print_out(sorted_players[0])
 
     # Color winner a separate color
-    # winner_index = -1
-    # for i, p in enumerate(players):
-    #     if p["fitness"] == sorted_players[0]['fitness'] and winner_index == -1:
-    #         p["color"] = p["color"]
-    #         winner_index = i
+    winner_index = -1
+    for i, p in enumerate(players):
+        if p["fitness"] == sorted_players[0]['fitness'] and winner_index == -1:
+            p["color"] = "#ff0000"
+            winner_index = i
+        else:
+            p["color"] = "#ffffff"
 
     # Draw all snakes based on move_set generated when forming results
     # if runs % RUNS_PER_DRAWN == 0:
