@@ -5,6 +5,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+def plot_bollinger_bands(data, start_date=None, end_date=None):
+    # If start_date and end_date are not provided, use the entire dataset
+    if start_date is None:
+        start_date = data.index[0]
+    if end_date is None:
+        end_date = data.index[-1]
+    
+    # Filter the data based on the date range
+    plot_data = data.loc[start_date:end_date]
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Plot the closing price
+    ax.plot(plot_data.index, plot_data['Close'], label='Close Price', color='blue', alpha=0.5)
+
+    # Plot the Bollinger Bands
+    ax.plot(plot_data.index, plot_data['BB_Upper'], label='Upper BB', color='red', alpha=0.7)
+    ax.plot(plot_data.index, plot_data['BB_Middle'], label='Middle BB', color='green', alpha=0.7)
+    ax.plot(plot_data.index, plot_data['BB_Lower'], label='Lower BB', color='red', alpha=0.7)
+
+    # ax.plot(plot_data.index, plot_data['%D'], label='%D', color='purple', alpha=0.7)
+    # ax.plot(plot_data.index, plot_data['%K'], label='%K', color='yellow', alpha=0.7)
+
+    # Fill the area between the upper and lower bands
+    ax.fill_between(plot_data.index, plot_data['BB_Upper'], plot_data['BB_Lower'], alpha=0.1)
+
+    # Set title and labels
+    ax.set_title('Stock Price with Bollinger Bands')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Price')
+
+    # Format the date on the x-axis
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=5))  # Show date every 5 days
+    plt.xticks(rotation=45)
+
+    # Add legend
+    ax.legend()
+
+    # Adjust layout and display the plot
+    plt.tight_layout()
+    plt.show()
+
+
 def calculate_bollinger_bands(data, window=20, num_std=2):
     # Calculate the simple moving average
     data['BB_Middle'] = data['Close'].rolling(window=window).mean()

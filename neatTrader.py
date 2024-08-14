@@ -1,6 +1,10 @@
 # Note: Can train to a high level on every day, but need to make sure that the same trader is what's doing well on all of them
 # - Could do something where when a trader get's a high level they are tested on each day, getting further trained on the day it did worse on until good at all. Maybe keep one day to be test only?
 # - Also, fitness is very unnaturally high immediately upon switching to a new day, before going down again, fixed now that I've moved reset_players to earlier? I feel like maybe not
+# - How to get rid of local optimums? Sometimes we get stuck and stop improving
+
+# Note: trained one to 18,000 within 20 rounds, and then switched to next day and immediately got 23,000, but got 0 on next day, quickly trained to 2000, then got 4000 on next day, 18000, then 8000 on the next, quickly trained back to 23,000 the next right away
+# - Again though, same trader or not? 
 
 import random
 import math
@@ -15,7 +19,7 @@ import matplotlib.dates as mdates
 
 from alive_progress import alive_bar
 
-NUM_INPUT_NODES = 7
+NUM_INPUT_NODES = 7 # note: when this was on 7 it was training but we were missing calculated inputs, correct is 11
 NUM_OUTPUT_NODES = 5
 GENERATION_POPULATION_LIMIT = 300
 SPECIES_LIMIT = 3
@@ -461,6 +465,32 @@ def reset_traders(traders):
         t["fitness"] = 0
         t["held"] = 0
 
+def test_trader(t):
+    t["fitness"] = 0
+    t["held"] = 0
+    with alive_bar(len(get_training_data("2024-08-08", "2024-08-13")), title="Simulating Trading Day...") as bar:
+        
+        for index, row in get_training_data("2024-08-08", "2024-08-13").iterrows():
+                inputs = row.tolist() # + [t["held"]] # Add amount held somewhat normalized to inputs
+                decision = produce_move(t["phenotype"], inputs)
+                decision_index = decision.index(max(decision))
+                if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
+                    t["fitness"] += t["held"] * row["Close"]
+                    t["held"] = 0
+                elif decision_index == 1:
+                    t["fitness"] += 10 * row["Close"]
+                    t["held"] -= 10
+                elif decision_index == 3:
+                    t["fitness"] -= 10 * row["Close"]
+                    t["held"] += 10
+                elif decision_index == 4:
+                    t["fitness"] -= 50 * row["Close"]
+                    t["held"] += 50
+                bar()
+
+    print("Ending fitness after every day: ", t['fitness'])
+
+
 traders = [make_trader(make_player()) for _ in range(GENERATION_POPULATION_LIMIT)]
 runs = 0
 date_counter = 0
@@ -492,7 +522,7 @@ while True:
                     break
 
                 for i, t in enumerate(traders):
-                    inputs = row.tolist() # + [t["held"] / 100] # Add amount held somewhat normalized to inputs
+                    inputs = row.tolist() # + [t["held"]] # Add amount held somewhat normalized to inputs
                     decision = produce_move(t["phenotype"], inputs)
                     decision_index = decision.index(max(decision))
                     if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
@@ -516,9 +546,14 @@ while True:
         traders = next_generation(traders)
 
     except KeyboardInterrupt:
-        if input("\nMove on to next date (y/n): ") == "y":
+        if input("\nMove to next date? (y/n): ") == "y":
             date_counter += 1
             continue
         else:
-            print("Quitting...")
-            quit()
+            if input("\nTest highest performer? (y/n): ") == "y":
+                print_out(sorted_traders[0])
+                test_trader(sorted_traders[0])
+                continue
+            else:
+                print("Quitting...")
+                quit()
