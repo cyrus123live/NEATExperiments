@@ -1,3 +1,7 @@
+# Note: Can train to a high level on every day, but need to make sure that the same trader is what's doing well on all of them
+# - Could do something where when a trader get's a high level they are tested on each day, getting further trained on the day it did worse on until good at all. Maybe keep one day to be test only?
+# - Also, fitness is very unnaturally high immediately upon switching to a new day, before going down again, fixed now that I've moved reset_players to earlier? I feel like maybe not
+
 import random
 import math
 from collections import deque
@@ -435,13 +439,13 @@ def get_training_data(start_date, end_date):
 
     historical_prices.dropna(inplace=True)
 
-    # features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Upper", "BB_Lower", "BB_Width", "BB_Percentage"]
-    features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Width"]
+    features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Upper", "BB_Lower", "BB_Width", "BB_Percentage"]
+    # features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Width"]
     data = pd.DataFrame(index=historical_prices.index)
     for feature in features:
-        data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
-        # data[f'{feature}'] = historical_prices[feature]
-    data["Price_Change"] = historical_prices["Price_Change"] * 1000
+        # data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
+        data[f'{feature}'] = historical_prices[feature]
+    # data["Price_Change"] = historical_prices["Price_Change"] * 1000
 
     return data.loc[start_date:end_date]
 
@@ -465,6 +469,8 @@ while True:
 
     try:
 
+        reset_traders(traders)
+
         if 8 + (date_counter % 6) >= 10:
             date = f"2024-08-{8 + (date_counter % 6)}"
         else:
@@ -486,8 +492,8 @@ while True:
                     break
 
                 for i, t in enumerate(traders):
-                    inputs = row.tolist()
-                    decision = produce_move(t["phenotype"], inputs + [t["held"] / 100])
+                    inputs = row.tolist() # + [t["held"] / 100] # Add amount held somewhat normalized to inputs
+                    decision = produce_move(t["phenotype"], inputs)
                     decision_index = decision.index(max(decision))
                     if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
                         t["fitness"] += t["held"] * row["Close"]
@@ -508,7 +514,6 @@ while True:
         sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
         print(f"Run: {runs}, Date: {date}, Maximum fitness: {sorted_traders[0]['fitness']:.1f}, average fitness: {sum([s['fitness'] for s in sorted_traders]) // len(sorted_traders)}, number of species: {len(speciation(traders))}\n")
         traders = next_generation(traders)
-        reset_traders(traders)
 
     except KeyboardInterrupt:
         if input("\nMove on to next date (y/n): ") == "y":
