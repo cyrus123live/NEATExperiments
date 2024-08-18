@@ -31,7 +31,7 @@ BABY_MUTATION_CHANCE = 1
 MINUTES_TRAINED_PER_DAY = 100000
 STARTING_CASH = 1000000
 MAX_TRAINING_GENERATIONS = 20
-TICKER = "GC=F"
+TICKER = "BTC-USD"
 
 global innovationCounter
 innovationCounter = 0
@@ -512,8 +512,9 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
         # else:
         #     date = f"2024-08-0{8 + (date_counter % 6)}"
         date = "2024-08-14"
+        current_date = datetime.now().strftime("%Y-%m-%d")
         
-        training_data = get_training_data("2024-08-08", "2024-08-15")
+        training_data = get_training_data("2024-08-08", "2024-08-16")
 
         if len(training_data) == 0:
             date_counter += 1
