@@ -6,6 +6,8 @@
 # Note: trained one to 18,000 within 20 rounds, and then switched to next day and immediately got 23,000, but got 0 on next day, quickly trained to 2000, then got 4000 on next day, 18000, then 8000 on the next, quickly trained back to 23,000 the next right away
 # - Again though, same trader or not? 
 
+# Train on data from a stock which trended down?
+
 import random
 import math
 from collections import deque
@@ -19,14 +21,17 @@ import matplotlib.dates as mdates
 
 from alive_progress import alive_bar
 
-NUM_INPUT_NODES = 7 # note: when this was on 7 it was training but we were missing calculated inputs, correct is 11
+NUM_INPUT_NODES = 11
 NUM_OUTPUT_NODES = 5
 GENERATION_POPULATION_LIMIT = 300
 SPECIES_LIMIT = 3
 GENERATION_KEEP_CONSTANT = 0.16
 BABY_MUTATION_CHANCE = 1
 
-MINUTES_TRAINED_PER_DAY = 1000
+MINUTES_TRAINED_PER_DAY = 100000
+STARTING_CASH = 1000000
+MAX_TRAINING_GENERATIONS = 20
+TICKER = "GC=F"
 
 global innovationCounter
 innovationCounter = 0
@@ -427,7 +432,7 @@ def calculate_vwap(data):
 def get_training_data(start_date, end_date):
 
     # Get the data of the stock
-    apple = yf.Ticker('AAPL')
+    apple = yf.Ticker(TICKER)
 
     # Get the historical prices for Apple stock
     historical_prices = apple.history(period='max', interval='1m')
@@ -444,12 +449,23 @@ def get_training_data(start_date, end_date):
     historical_prices.dropna(inplace=True)
 
     features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Upper", "BB_Lower", "BB_Width", "BB_Percentage"]
-    # features = ["Close", "Volume", "RSI", "20_Avg", "VWAP", "Price_Change", "BB_Width"]
     data = pd.DataFrame(index=historical_prices.index)
+
+    # Normalize each feature using a rolling window
     for feature in features:
-        # data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
-        data[f'{feature}'] = historical_prices[feature]
-    # data["Price_Change"] = historical_prices["Price_Change"] * 1000
+        rolling_mean = historical_prices[feature].rolling(window=20).mean()
+        rolling_std = historical_prices[feature].rolling(window=20).std()
+
+        # Normalize the feature (subtract rolling mean, divide by rolling std dev)
+        data[f'{feature}'] = (historical_prices[feature] - rolling_mean) / rolling_std
+    data["Close_Not_Normalized"] = historical_prices["Close"]
+
+    # for feature in features:
+    #     # data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
+    #     data[f'{feature}'] = historical_prices[feature]
+    # # data["Price_Change"] = historical_prices["Price_Change"] * 1000
+
+    data.dropna(inplace=True)
 
     return data.loc[start_date:end_date]
 
@@ -457,6 +473,8 @@ def make_trader(phenotype):
     return {
         "fitness": 0,
         "held": 0,
+        "cash": STARTING_CASH,
+        "portfolio_values": [],
         "phenotype": phenotype
     }
 
@@ -464,96 +482,94 @@ def reset_traders(traders):
     for t in traders:
         t["fitness"] = 0
         t["held"] = 0
+        t["cash"] = STARTING_CASH
+        t["portfolio_values"] = []
 
-def test_trader(t):
-    t["fitness"] = 0
-    t["held"] = 0
-    with alive_bar(len(get_training_data("2024-08-08", "2024-08-13")), title="Simulating Trading Day...") as bar:
-        
-        for index, row in get_training_data("2024-08-08", "2024-08-13").iterrows():
-                inputs = row.tolist() # + [t["held"]] # Add amount held somewhat normalized to inputs
-                decision = produce_move(t["phenotype"], inputs)
-                decision_index = decision.index(max(decision))
-                if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
-                    t["fitness"] += t["held"] * row["Close"]
-                    t["held"] = 0
-                elif decision_index == 1:
-                    t["fitness"] += 10 * row["Close"]
-                    t["held"] -= 10
-                elif decision_index == 3:
-                    t["fitness"] -= 10 * row["Close"]
-                    t["held"] += 10
-                elif decision_index == 4:
-                    t["fitness"] -= 50 * row["Close"]
-                    t["held"] += 50
-                bar()
+def calculate_trader_fitness(traders):
+    for i, t in enumerate(traders):
+        returns = [t["portfolio_values"][i] - t["portfolio_values"][i - 1] for i in range(1, len(t["portfolio_values"]))]
+        mean_return = np.mean(returns)
+        standard_deviation = np.std(returns)
 
-    print("Ending fitness after every day: ", t['fitness'])
+        if standard_deviation == 0:
+            t["fitnesss"] = 0
+            continue
 
+        t["fitness"] = mean_return / standard_deviation # Sharpe ratio for fitness function
 
 traders = [make_trader(make_player()) for _ in range(GENERATION_POPULATION_LIMIT)]
 runs = 0
 date_counter = 0
 
-while True:
+for generation_counter in range(MAX_TRAINING_GENERATIONS):
 
     try:
 
         reset_traders(traders)
 
-        if 8 + (date_counter % 6) >= 10:
-            date = f"2024-08-{8 + (date_counter % 6)}"
-        else:
-            date = f"2024-08-0{8 + (date_counter % 6)}"
+        # if 8 + (date_counter % 6) >= 10:
+        #     date = f"2024-08-{8 + (date_counter % 6)}"
+        # else:
+        #     date = f"2024-08-0{8 + (date_counter % 6)}"
+        date = "2024-08-14"
+        
+        training_data = get_training_data("2024-08-08", "2024-08-15")
 
-        if len(get_training_data(date, date)) == 0:
+        if len(training_data) == 0:
             date_counter += 1
             continue
 
         minute_counter = 0
 
         # with alive_bar(len(get_training_data(date, date)), title="Simulating Trading Day...") as bar:
-        with alive_bar(min(MINUTES_TRAINED_PER_DAY, len(get_training_data(date, date))), title="Simulating Trading Day...") as bar:
+        with alive_bar(min(MINUTES_TRAINED_PER_DAY, len(training_data)), title="Simulating Trading Day...") as bar:
         
-            for index, row in get_training_data(date, date).iterrows():
+            for index, row in training_data.iterrows():
 
                 minute_counter += 1
                 if minute_counter > MINUTES_TRAINED_PER_DAY:
                     break
 
                 for i, t in enumerate(traders):
-                    inputs = row.tolist() # + [t["held"]] # Add amount held somewhat normalized to inputs
+                    inputs = row.tolist() + [float((t["held"] * row["Close_Not_Normalized"]) / (t["held"] * row["Close_Not_Normalized"] + t["cash"]))] # Add amount held as proportion of portfolio value to inputs
+                    inputs.remove(row["Close_Not_Normalized"])
                     decision = produce_move(t["phenotype"], inputs)
                     decision_index = decision.index(max(decision))
                     if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
-                        t["fitness"] += t["held"] * row["Close"]
+                        t["cash"] += t["held"] * row["Close_Not_Normalized"]
                         t["held"] = 0
                     elif decision_index == 1:
-                        t["fitness"] += 10 * row["Close"]
+                        t["cash"] += 10 * row["Close_Not_Normalized"]
                         t["held"] -= 10
-                    elif decision_index == 3:
-                        t["fitness"] -= 10 * row["Close"]
+                    elif decision_index == 3 and t["cash"] >= 10 * row["Close_Not_Normalized"]:
+                        t["cash"] -= 10 * row["Close_Not_Normalized"]
                         t["held"] += 10
-                    elif decision_index == 4:
-                        t["fitness"] -= 50 * row["Close"]
+                    elif decision_index == 4 and t["cash"] >= 50 * row["Close_Not_Normalized"]:
+                        t["cash"] -= 50 * row["Close_Not_Normalized"]
                         t["held"] += 50
+
+                    t["portfolio_values"].append(t["held"] * row["Close_Not_Normalized"] + t["cash"])
+
                 bar()
 
         runs += 1
 
+        calculate_trader_fitness(traders)
+
         sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
-        print(f"Run: {runs}, Date: {date}, Maximum fitness: {sorted_traders[0]['fitness']:.1f}, average fitness: {sum([s['fitness'] for s in sorted_traders]) // len(sorted_traders)}, number of species: {len(speciation(traders))}\n")
+        print(f"Run: {runs}, Date: {date}, Maximum fitness: {sorted_traders[0]['fitness']}, average fitness: {sum([s['fitness'] for s in sorted_traders]) / len(sorted_traders)}, number of species: {len(speciation(traders))}\n")
         traders = next_generation(traders)
 
     except KeyboardInterrupt:
-        if input("\nMove to next date? (y/n): ") == "y":
+        x  = int(input("\nWhat would you like to do?\n1: Move to next date.\n2: Print out currently winning trader.\n3: Quit.\n\nInput: "))
+        if x == 1:
             date_counter += 1
             continue
+        elif x == 2:
+            print_out(sorted_traders[0])
+            continue
         else:
-            if input("\nTest highest performer? (y/n): ") == "y":
-                print_out(sorted_traders[0])
-                test_trader(sorted_traders[0])
-                continue
-            else:
-                print("Quitting...")
-                quit()
+            quit()
+
+sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
+print_out(sorted_traders[0])

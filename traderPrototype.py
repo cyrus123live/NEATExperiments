@@ -130,9 +130,10 @@ def get_training_data():
     data = pd.DataFrame(index=historical_prices.index)
     for feature in features:
         # Note: normalization introduces future information
-        data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
-        # data[f'{feature}'] = historical_prices[feature]
-    data["Price_Change"] = historical_prices["Price_Change"] * 1000
+        # data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
+        data[f'{feature}'] = historical_prices[feature]
+    # data["Price_Change"] = historical_prices["Price_Change"] * 1000
+    print(data)
 
     return data
 
