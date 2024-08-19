@@ -436,8 +436,8 @@ def get_training_data(start_date, end_date):
 
     # Get the historical prices for Apple stock
     historical_prices = apple.history(period='max', interval='1m')
-    del historical_prices["Dividends"]
-    del historical_prices["Stock Splits"]
+    # del historical_prices["Dividends"]
+    # del historical_prices["Stock Splits"]
 
     calculate_rsi(historical_prices)
     calculate_stochastic(historical_prices)
@@ -489,13 +489,26 @@ def calculate_trader_fitness(traders):
     for i, t in enumerate(traders):
         returns = [t["portfolio_values"][i] - t["portfolio_values"][i - 1] for i in range(1, len(t["portfolio_values"]))]
         mean_return = np.mean(returns)
-        standard_deviation = np.std(returns)
 
-        if standard_deviation == 0:
-            t["fitnesss"] = 0
-            continue
+        # Old code for the Sharpe ratio
+        # standard_deviation = np.std(returns)
+        # if standard_deviation == 0:
+        #     t["fitnesss"] = 0
+        #     continue
 
-        t["fitness"] = mean_return / standard_deviation # Sharpe ratio for fitness function
+        # Calculate downside deviation
+        downside_returns = [r for r in returns if r < 0]
+        if len(downside_returns) > 0:
+            downside_deviation = np.std(downside_returns)
+        else:
+            downside_deviation = 0
+
+        if downside_deviation == 0:
+            t["fitness"] = 0
+        else:
+            t["fitness"] = (mean_return) / downside_deviation
+
+        # t["fitness"] = mean_return / standard_deviation # Sharpe ratio for fitness function
 
 traders = [make_trader(make_player()) for _ in range(GENERATION_POPULATION_LIMIT)]
 runs = 0
