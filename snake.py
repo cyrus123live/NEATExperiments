@@ -23,7 +23,7 @@ pheight = HEIGHT // PSIZE
 
 RUNS_PER_DRAWN = 1
 SNAKES_DRAWN = GENERATION_POPULATION_LIMIT
-MIN_FITNESS_TO_DRAW = 100000
+MIN_FITNESS_TO_DRAW = 1
 
 global innovationCounter
 innovationCounter = 0
