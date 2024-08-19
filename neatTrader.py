@@ -527,7 +527,7 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
         date = "2024-08-14"
         current_date = datetime.now().strftime("%Y-%m-%d")
         
-        training_data = get_training_data("2024-08-08", "2024-08-16")
+        training_data = get_training_data("2024-08-08", "2024-08-18")
 
         if len(training_data) == 0:
             date_counter += 1
