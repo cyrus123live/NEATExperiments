@@ -20,6 +20,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 from alive_progress import alive_bar
+import sys
+import warnings
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 NUM_INPUT_NODES = 11
 NUM_OUTPUT_NODES = 5
@@ -488,24 +493,17 @@ def calculate_trader_fitness(traders):
             t["fitness"] = (mean_return) / downside_deviation
 
 traders = [make_trader(make_player()) for _ in range(GENERATION_POPULATION_LIMIT)]
-runs = 0
-date_counter = 0
+training_data = get_training_data()
 
 for generation_counter in range(MAX_TRAINING_GENERATIONS):
 
     try:
 
         reset_traders(traders)
-        
-        training_data = get_training_data()
-
-        if len(training_data) == 0:
-            date_counter += 1
-            continue
 
         minute_counter = 0
 
-        with alive_bar(min(MINUTES_TRAINED_PER_DAY, len(training_data)), title="Simulating Trading Day...") as bar:
+        with alive_bar(min(MINUTES_TRAINED_PER_DAY, len(training_data)), title=f"Simulating Trading Day {generation_counter}...") as bar:
         
             for index, row in training_data.iterrows():
 
@@ -535,8 +533,6 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
 
                 bar()
 
-        runs += 1
-
         calculate_trader_fitness(traders)
 
         sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
@@ -554,6 +550,8 @@ sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
 best_trader = print_out(sorted_traders[0])
 
 current_date = datetime.now().strftime("%Y-%m-%d")
+
+print(best_trader)
 
 # Writing to a file
 with open(f'models/{current_date}.txt', 'w') as file:
