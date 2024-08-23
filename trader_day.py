@@ -28,7 +28,7 @@ SPECIES_LIMIT = 3
 GENERATION_KEEP_CONSTANT = 0.16
 BABY_MUTATION_CHANCE = 1
 
-MINUTES_TRAINED_PER_DAY = 100000
+MINUTES_TRAINED_PER_DAY = 10000000
 STARTING_CASH = 1000000
 MAX_TRAINING_GENERATIONS = 20
 TICKER = "BTC-USD"
@@ -43,28 +43,16 @@ nodeCounter = NUM_OUTPUT_NODES + NUM_INPUT_NODES + 1
 global species_similarity
 species_similarity = 0.99
 
-def visualize(p):
-
-    edge_data = [[e["source"], e["dest"], str(e["weight"])] for e in p["phenotype"]["edges"]]
-    
-    edge_df = pd.DataFrame(edge_data, columns=['from', 'to', 'label'])
-
-    node_data = [[n["id"]] for n in p["phenotype"]["nodes"]]
-    node_df = pd.DataFrame(node_data, columns=["id"])
-
-    # init Jaal and run server
-    Jaal(edge_df, node_df).plot(directed=True)
-
 def sigmoid(x):
     return 1 / (1 + (math.e ** x))
 
 def print_out(p):
     output="nodes:\n"
     for n in p["phenotype"]["nodes"]:
-        output+=n+"\n"
+        output+=str(n)+"\n"
     output+="\nedges:\n"
     for e in p["phenotype"]["edges"]:
-        output+=e+"\n"
+        output+=str(e)+"\n"
 
     return output
 
@@ -431,7 +419,7 @@ def calculate_vwap(data):
     vwap = pd.Series(index=data.index, data=np.cumsum(tp * v) / np.cumsum(v))
     data["VWAP"] = vwap
 
-def get_training_data(start_date, end_date):
+def get_training_data():
 
     # Get the data of the stock
     apple = yf.Ticker(TICKER)
@@ -462,14 +450,9 @@ def get_training_data(start_date, end_date):
         data[f'{feature}'] = (historical_prices[feature] - rolling_mean) / rolling_std
     data["Close_Not_Normalized"] = historical_prices["Close"]
 
-    # for feature in features:
-    #     # data[f'{feature}'] = historical_prices[feature] / historical_prices[feature].iloc[0]
-    #     data[f'{feature}'] = historical_prices[feature]
-    # # data["Price_Change"] = historical_prices["Price_Change"] * 1000
-
     data.dropna(inplace=True)
 
-    return data.loc[start_date:end_date]
+    return data
 
 def make_trader(phenotype):
     return {
@@ -492,12 +475,6 @@ def calculate_trader_fitness(traders):
         returns = [t["portfolio_values"][i] - t["portfolio_values"][i - 1] for i in range(1, len(t["portfolio_values"]))]
         mean_return = np.mean(returns)
 
-        # Old code for the Sharpe ratio
-        # standard_deviation = np.std(returns)
-        # if standard_deviation == 0:
-        #     t["fitnesss"] = 0
-        #     continue
-
         # Calculate downside deviation
         downside_returns = [r for r in returns if r < 0]
         if len(downside_returns) > 0:
@@ -509,8 +486,6 @@ def calculate_trader_fitness(traders):
             t["fitness"] = 0
         else:
             t["fitness"] = (mean_return) / downside_deviation
-
-        # t["fitness"] = mean_return / standard_deviation # Sharpe ratio for fitness function
 
 traders = [make_trader(make_player()) for _ in range(GENERATION_POPULATION_LIMIT)]
 runs = 0
@@ -530,7 +505,6 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
 
         minute_counter = 0
 
-        # with alive_bar(len(get_training_data(date, date)), title="Simulating Trading Day...") as bar:
         with alive_bar(min(MINUTES_TRAINED_PER_DAY, len(training_data)), title="Simulating Trading Day...") as bar:
         
             for index, row in training_data.iterrows():
@@ -548,14 +522,14 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
                         t["cash"] += t["held"] * row["Close_Not_Normalized"]
                         t["held"] = 0
                     elif decision_index == 1:
-                        t["cash"] += 10 * row["Close_Not_Normalized"]
-                        t["held"] -= 10
+                        t["cash"] += 1 * row["Close_Not_Normalized"]
+                        t["held"] -= 1
                     elif decision_index == 3 and t["cash"] >= 10 * row["Close_Not_Normalized"]:
-                        t["cash"] -= 10 * row["Close_Not_Normalized"]
-                        t["held"] += 10
+                        t["cash"] -= 1 * row["Close_Not_Normalized"]
+                        t["held"] += 1
                     elif decision_index == 4 and t["cash"] >= 50 * row["Close_Not_Normalized"]:
-                        t["cash"] -= 50 * row["Close_Not_Normalized"]
-                        t["held"] += 50
+                        t["cash"] -= 5 * row["Close_Not_Normalized"]
+                        t["held"] += 5
 
                     t["portfolio_values"].append(t["held"] * row["Close_Not_Normalized"] + t["cash"])
 
@@ -569,12 +543,9 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
         traders = next_generation(traders)
 
     except KeyboardInterrupt:
-        x  = int(input("\nWhat would you like to do?\n1: Move to next date.\n2: Print out currently winning trader.\n3: Quit.\n\nInput: "))
+        x  = int(input("\n1: Print out currently winning trader.\n2: Quit.\n\nInput: "))
         if x == 1:
-            date_counter += 1
-            continue
-        elif x == 2:
-            print_out(sorted_traders[0])
+            print(print_out(sorted_traders[0]))
             continue
         else:
             quit()
@@ -583,3 +554,7 @@ sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
 best_trader = print_out(sorted_traders[0])
 
 current_date = datetime.now().strftime("%Y-%m-%d")
+
+# Writing to a file
+with open(f'models/{current_date}.txt', 'w') as file:
+    file.write(best_trader)
