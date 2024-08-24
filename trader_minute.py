@@ -14,9 +14,12 @@ import matplotlib.dates as mdates
 from alive_progress import alive_bar
 import sys
 import warnings
+import time
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
+
+time.sleep(1)
 
 TICKER = "BTC-USD"
 NUM_INPUT_NODES = 11

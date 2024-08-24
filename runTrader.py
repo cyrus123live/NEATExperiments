@@ -9,14 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-from jaal import Jaal
-from jaal.datasets import load_got
-
 from alive_progress import alive_bar
 
 TICKER_SYMBOL = "BTC-USD"
-START_DATE = "2024-08-17"
-END_DATE = "2024-08-17"
+START_DATE = "2024-08-23"
+END_DATE = "2024-08-23"
 
 NUM_INPUT_NODES = 11
 STARTING_CASH = 1000000
@@ -41,61 +38,61 @@ nodes:
 {'id': 16, 'value': 0, 'layer': 'output'}
 
 edges:
-{'source': 0, 'dest': 12, 'weight': 1.4069946309184682, 'enabled': True, 'innovationNum': 0}
-{'source': 1, 'dest': 12, 'weight': -0.7732803824987462, 'enabled': True, 'innovationNum': 1}
-{'source': 2, 'dest': 12, 'weight': 1.4552255067099962, 'enabled': True, 'innovationNum': 2}
-{'source': 3, 'dest': 12, 'weight': 0.7591798871321482, 'enabled': True, 'innovationNum': 3}
-{'source': 4, 'dest': 12, 'weight': 1.0603605090646213, 'enabled': True, 'innovationNum': 4}
-{'source': 5, 'dest': 12, 'weight': -0.8061238001243112, 'enabled': True, 'innovationNum': 5}
-{'source': 7, 'dest': 12, 'weight': -1.8031790817629423, 'enabled': True, 'innovationNum': 7}
-{'source': 8, 'dest': 12, 'weight': 0.06752375424319101, 'enabled': True, 'innovationNum': 8}
-{'source': 9, 'dest': 12, 'weight': -0.41210342734771865, 'enabled': True, 'innovationNum': 9}
-{'source': 10, 'dest': 12, 'weight': -1.1927998573843281, 'enabled': True, 'innovationNum': 10}
-{'source': 0, 'dest': 13, 'weight': 1.5174842204398225, 'enabled': True, 'innovationNum': 11}
-{'source': 1, 'dest': 13, 'weight': -0.1365222599237601, 'enabled': True, 'innovationNum': 12}
-{'source': 2, 'dest': 13, 'weight': 1.5047264669645806, 'enabled': True, 'innovationNum': 13}
-{'source': 3, 'dest': 13, 'weight': -0.3462521774467797, 'enabled': True, 'innovationNum': 14}
-{'source': 4, 'dest': 13, 'weight': 1.4033781722835532, 'enabled': True, 'innovationNum': 15}
-{'source': 5, 'dest': 13, 'weight': 1.0531228298140496, 'enabled': True, 'innovationNum': 16}
-{'source': 7, 'dest': 13, 'weight': 1.069505878205114, 'enabled': True, 'innovationNum': 18}
-{'source': 8, 'dest': 13, 'weight': -1.5534370613584296, 'enabled': True, 'innovationNum': 19}
-{'source': 0, 'dest': 14, 'weight': -0.44830550997926233, 'enabled': True, 'innovationNum': 22}
-{'source': 1, 'dest': 14, 'weight': -1.0015783658189075, 'enabled': True, 'innovationNum': 23}
-{'source': 2, 'dest': 14, 'weight': 1.069225019321407, 'enabled': True, 'innovationNum': 24}
-{'source': 3, 'dest': 14, 'weight': -0.11486570767696191, 'enabled': True, 'innovationNum': 25}
-{'source': 4, 'dest': 14, 'weight': -1.689995878262934, 'enabled': True, 'innovationNum': 26}
-{'source': 5, 'dest': 14, 'weight': 0.6197349310759868, 'enabled': True, 'innovationNum': 27}
-{'source': 6, 'dest': 14, 'weight': -0.1795434546932726, 'enabled': True, 'innovationNum': 28}
-{'source': 7, 'dest': 14, 'weight': 1.854806860697133, 'enabled': True, 'innovationNum': 29}
-{'source': 9, 'dest': 14, 'weight': -1.6720917606880956, 'enabled': True, 'innovationNum': 31}
-{'source': 10, 'dest': 14, 'weight': 0.056550747468321116, 'enabled': True, 'innovationNum': 32}
-{'source': 0, 'dest': 15, 'weight': 0.22173460792411204, 'enabled': True, 'innovationNum': 33}
-{'source': 1, 'dest': 15, 'weight': -1.5812298569014134, 'enabled': True, 'innovationNum': 34}
-{'source': 3, 'dest': 15, 'weight': -1.1130919125215426, 'enabled': True, 'innovationNum': 36}
-{'source': 4, 'dest': 15, 'weight': 0.9371587929218412, 'enabled': True, 'innovationNum': 37}
-{'source': 5, 'dest': 15, 'weight': -1.8840682363654997, 'enabled': True, 'innovationNum': 38}
-{'source': 6, 'dest': 15, 'weight': 1.7465514372437334, 'enabled': False, 'innovationNum': 39}
-{'source': 7, 'dest': 15, 'weight': 1.4843034815983627, 'enabled': True, 'innovationNum': 40}
-{'source': 8, 'dest': 15, 'weight': 2, 'enabled': True, 'innovationNum': 41}
-{'source': 9, 'dest': 15, 'weight': -1.0948271251423547, 'enabled': True, 'innovationNum': 42}
-{'source': 10, 'dest': 15, 'weight': 1.725608203712083, 'enabled': True, 'innovationNum': 43}
-{'source': 0, 'dest': 16, 'weight': -1.9935408577359133, 'enabled': True, 'innovationNum': 44}
-{'source': 1, 'dest': 16, 'weight': -1.9623379993993062, 'enabled': True, 'innovationNum': 45}
-{'source': 2, 'dest': 16, 'weight': 1.0945305456500445, 'enabled': True, 'innovationNum': 46}
-{'source': 3, 'dest': 16, 'weight': -0.15845386418173835, 'enabled': True, 'innovationNum': 47}
-{'source': 4, 'dest': 16, 'weight': 1.7545480116625738, 'enabled': True, 'innovationNum': 48}
-{'source': 7, 'dest': 16, 'weight': -0.26637960589018705, 'enabled': True, 'innovationNum': 51}
-{'source': 8, 'dest': 16, 'weight': 0.06825713191972538, 'enabled': True, 'innovationNum': 52}
-{'source': 9, 'dest': 16, 'weight': -1.595013680032583, 'enabled': True, 'innovationNum': 53}
-{'source': 10, 'dest': 16, 'weight': 0.19631675838665696, 'enabled': True, 'innovationNum': 54}
-{'source': 6, 'dest': 16, 'weight': -0.29747435450936566, 'enabled': True, 'innovationNum': 50}
-{'source': 5, 'dest': 16, 'weight': 0.3136485160736837, 'enabled': True, 'innovationNum': 49}
-{'source': 8, 'dest': 14, 'weight': 0.9526554527791431, 'enabled': True, 'innovationNum': 30}
-{'source': 9, 'dest': 13, 'weight': 2, 'enabled': True, 'innovationNum': 20}
-{'source': 10, 'dest': 13, 'weight': -1.522393636811124, 'enabled': True, 'innovationNum': 21}
-{'source': 2, 'dest': 15, 'weight': 0.9584083753684638, 'enabled': True, 'innovationNum': 35}
-{'source': 6, 'dest': 13, 'weight': -1.8433404301567977, 'enabled': True, 'innovationNum': 17}
-{'source': 6, 'dest': 12, 'weight': -1.6296801680194646, 'enabled': True, 'innovationNum': 6}
+{'source': 0, 'dest': 12, 'weight': 0.04901413550845346, 'enabled': True, 'innovationNum': 0}
+{'source': 1, 'dest': 12, 'weight': -1.6302670785006748, 'enabled': True, 'innovationNum': 1}
+{'source': 2, 'dest': 12, 'weight': -0.402426777573512, 'enabled': True, 'innovationNum': 2}
+{'source': 3, 'dest': 12, 'weight': -1.3903952350832833, 'enabled': True, 'innovationNum': 3}
+{'source': 4, 'dest': 12, 'weight': 0.2539284637841077, 'enabled': True, 'innovationNum': 4}
+{'source': 5, 'dest': 12, 'weight': -1.1244523278139424, 'enabled': True, 'innovationNum': 5}
+{'source': 6, 'dest': 12, 'weight': -1.598541022803401, 'enabled': True, 'innovationNum': 6}
+{'source': 7, 'dest': 12, 'weight': 1.352997942935004, 'enabled': True, 'innovationNum': 7}
+{'source': 8, 'dest': 12, 'weight': 0.5167040641615919, 'enabled': True, 'innovationNum': 8}
+{'source': 9, 'dest': 12, 'weight': 1.933903095993132, 'enabled': True, 'innovationNum': 9}
+{'source': 10, 'dest': 12, 'weight': -0.47231657303134966, 'enabled': True, 'innovationNum': 10}
+{'source': 0, 'dest': 13, 'weight': -1.3956468681265495, 'enabled': True, 'innovationNum': 11}
+{'source': 1, 'dest': 13, 'weight': -1.3201762566504724, 'enabled': True, 'innovationNum': 12}
+{'source': 2, 'dest': 13, 'weight': 0.7205737761119231, 'enabled': True, 'innovationNum': 13}
+{'source': 3, 'dest': 13, 'weight': 1.7400454810817885, 'enabled': True, 'innovationNum': 14}
+{'source': 4, 'dest': 13, 'weight': 2, 'enabled': True, 'innovationNum': 15}
+{'source': 5, 'dest': 13, 'weight': 1.8235885862334045, 'enabled': True, 'innovationNum': 16}
+{'source': 6, 'dest': 13, 'weight': -1.9346439178666905, 'enabled': True, 'innovationNum': 17}
+{'source': 7, 'dest': 13, 'weight': -1.2932955265291874, 'enabled': True, 'innovationNum': 18}
+{'source': 8, 'dest': 13, 'weight': -1.8936788417335015, 'enabled': True, 'innovationNum': 19}
+{'source': 9, 'dest': 13, 'weight': 1.164086281894563, 'enabled': True, 'innovationNum': 20}
+{'source': 10, 'dest': 13, 'weight': -1.390823571702342, 'enabled': True, 'innovationNum': 21}
+{'source': 0, 'dest': 14, 'weight': -0.3286338747064179, 'enabled': True, 'innovationNum': 22}
+{'source': 1, 'dest': 14, 'weight': -1.9238780573868466, 'enabled': True, 'innovationNum': 23}
+{'source': 2, 'dest': 14, 'weight': 0.2689363113998051, 'enabled': True, 'innovationNum': 24}
+{'source': 3, 'dest': 14, 'weight': -0.13300561543669787, 'enabled': True, 'innovationNum': 25}
+{'source': 4, 'dest': 14, 'weight': -0.3639477403662439, 'enabled': True, 'innovationNum': 26}
+{'source': 5, 'dest': 14, 'weight': -0.9283459124556521, 'enabled': True, 'innovationNum': 27}
+{'source': 6, 'dest': 14, 'weight': -1.4107993754908894, 'enabled': True, 'innovationNum': 28}
+{'source': 7, 'dest': 14, 'weight': -1.0129721037541435, 'enabled': True, 'innovationNum': 29}
+{'source': 8, 'dest': 14, 'weight': -1.6848511669899509, 'enabled': True, 'innovationNum': 30}
+{'source': 9, 'dest': 14, 'weight': 0.14521062947728813, 'enabled': True, 'innovationNum': 31}
+{'source': 10, 'dest': 14, 'weight': 0.7690853322292197, 'enabled': True, 'innovationNum': 32}
+{'source': 0, 'dest': 15, 'weight': 1.1844675298670877, 'enabled': True, 'innovationNum': 33}
+{'source': 1, 'dest': 15, 'weight': 0.08233374117619813, 'enabled': True, 'innovationNum': 34}
+{'source': 2, 'dest': 15, 'weight': -0.3244248867398678, 'enabled': True, 'innovationNum': 35}
+{'source': 4, 'dest': 15, 'weight': 0.06005808209695607, 'enabled': True, 'innovationNum': 37}
+{'source': 5, 'dest': 15, 'weight': -0.6904086317934235, 'enabled': True, 'innovationNum': 38}
+{'source': 6, 'dest': 15, 'weight': 1.9495710608632049, 'enabled': True, 'innovationNum': 39}
+{'source': 7, 'dest': 15, 'weight': 1.8486724349485715, 'enabled': True, 'innovationNum': 40}
+{'source': 8, 'dest': 15, 'weight': 0.5107796934759299, 'enabled': True, 'innovationNum': 41}
+{'source': 9, 'dest': 15, 'weight': 1.5882891615364163, 'enabled': True, 'innovationNum': 42}
+{'source': 10, 'dest': 15, 'weight': 1.714450113512299, 'enabled': True, 'innovationNum': 43}
+{'source': 0, 'dest': 16, 'weight': -1.6396500314641096, 'enabled': True, 'innovationNum': 44}
+{'source': 1, 'dest': 16, 'weight': -1.6404276361750516, 'enabled': True, 'innovationNum': 45}
+{'source': 3, 'dest': 16, 'weight': 0.32732855843248876, 'enabled': True, 'innovationNum': 47}
+{'source': 4, 'dest': 16, 'weight': -0.17653851613409577, 'enabled': True, 'innovationNum': 48}
+{'source': 5, 'dest': 16, 'weight': 0.8829079101326109, 'enabled': True, 'innovationNum': 49}
+{'source': 6, 'dest': 16, 'weight': 1.6135213154674775, 'enabled': False, 'innovationNum': 50}
+{'source': 7, 'dest': 16, 'weight': 1.0342737186869675, 'enabled': True, 'innovationNum': 51}
+{'source': 8, 'dest': 16, 'weight': 0.06505799427504488, 'enabled': True, 'innovationNum': 52}
+{'source': 9, 'dest': 16, 'weight': -0.5232775927168967, 'enabled': True, 'innovationNum': 53}
+{'source': 10, 'dest': 16, 'weight': 0.297213728736609, 'enabled': True, 'innovationNum': 54}
+{'source': 3, 'dest': 15, 'weight': -1.7357134523025177, 'enabled': True, 'innovationNum': 36}
+{'source': 2, 'dest': 16, 'weight': 0.8608205284450823, 'enabled': True, 'innovationNum': 46}
 '''
 
 def produce_move(c, inputs):
