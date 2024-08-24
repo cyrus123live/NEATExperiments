@@ -31,7 +31,7 @@ conn.execute('''
         close REAL,
         cash REAL,
         decision INTEGER,
-        held INTEGER,
+        held REAL,
         value REAL
     )
 ''')
@@ -95,15 +95,8 @@ def calculate_vwap(data):
 
 def get_training_data():
 
-    url = 'https://api.binance.com/api/v3/klines'
-    params = {
-        'symbol': 'BTCUSDT',
-        'interval': '1m',
-        'limit': '100'  # Number of data points
-    }
-
-    response = requests.get(url, params=params)
-    data = response.json()
+    response = requests.get('https://api.kraken.com/0/public/OHLC?pair=BTCUSD')
+    data = response.json()["result"]['XXBTZUSD']
 
     historical_prices = {
         "Time": [],
@@ -113,13 +106,13 @@ def get_training_data():
         "High": []
     }
 
-    print(f"Candle timestamp: {datetime.fromtimestamp(data[-2][0] / 1000.0)} to {datetime.fromtimestamp(data[-2][6] / 1000.0)}")
+    print(f"Candle timestamp: {datetime.fromtimestamp(data[-2][0])}")
     print(f"Closing price: {data[-2][4]}")
 
     for candle in data:
-        historical_prices["Time"].append(datetime.fromtimestamp(candle[0] / 1000.0))
+        historical_prices["Time"].append(datetime.fromtimestamp(candle[0]))
         historical_prices["Close"].append(float(candle[4]))
-        historical_prices["Volume"].append(float(candle[5]))
+        historical_prices["Volume"].append(float(candle[6]))
         historical_prices["Low"].append(float(candle[3]))
         historical_prices["High"].append(float(candle[2]))
 
@@ -212,7 +205,7 @@ for e in edge_strings:
 try:
     previous_day = conn.execute('SELECT * FROM days').fetchall()[-1]
 except:
-    previous_day = [0, 0, 0, 1000000, 0, 0]
+    previous_day = [0, 0, 0, 100, 0, 0]
 
 t = {
     "held": previous_day[5],
@@ -223,27 +216,28 @@ t = {
     }
 }
 
-row = get_training_data().iloc[-2] # -1 is unfinished current minute (low volume unless at end of current minute), I think start at start of minute using last minutes data to remove possibility of starting at end but getting new minutes very starting data
+row = get_training_data().iloc[-2] # -1 is unfinished current minute, so we use last complete minute and call at very start of next minute
 
 inputs = row.tolist() + [float((t["held"] * row["Close_Not_Normalized"]) / (t["held"] * row["Close_Not_Normalized"] + t["cash"]))] # Add amount held as proportion of portfolio value to inputs
 inputs.remove(row["Close_Not_Normalized"])
 decision = produce_move(t["phenotype"], inputs)
 decision_index = decision.index(max(decision))
-if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
-    t["cash"] += t["held"] * row["Close_Not_Normalized"]
+
+if decision_index == 0 or (decision_index == 1 and t["held"] < 0.0001):
+    t["cash"] += t["held"] * row["Close_Not_Normalized"] - (t["held"] * row["Close_Not_Normalized"] * 0.004)
     t["held"] = 0
     print("Sell All")
 elif decision_index == 1:
-    t["cash"] += 1 * row["Close_Not_Normalized"]
-    t["held"] -= 1
+    t["cash"] += 0.0001 * row["Close_Not_Normalized"] - (0.0001 * row["Close_Not_Normalized"] * 0.004)
+    t["held"] -= 0.0001
     print("Sell")
-elif decision_index == 3 and t["cash"] >= 1 * row["Close_Not_Normalized"]:
-    t["cash"] -= 1 * row["Close_Not_Normalized"]
-    t["held"] += 1
+elif decision_index == 3 and t["cash"] >= 0.0001 * row["Close_Not_Normalized"]:
+    t["cash"] -= 0.0001 * row["Close_Not_Normalized"] + (0.0001 * row["Close_Not_Normalized"] * 0.004)
+    t["held"] += 0.0001
     print("Buy")
-elif decision_index == 4 and t["cash"] >= 10 * row["Close_Not_Normalized"]:
-    t["cash"] -= 10 * row["Close_Not_Normalized"]
-    t["held"] += 10
+elif decision_index == 4 and t["cash"] >= 0.001 * row["Close_Not_Normalized"]:
+    t["cash"] -= 0.001 * row["Close_Not_Normalized"] + (0.001 * row["Close_Not_Normalized"] * 0.004)
+    t["held"] += 0.001
     print("Buy a Lot")
 
 conn.execute('''
