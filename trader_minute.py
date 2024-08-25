@@ -208,7 +208,7 @@ for e in edge_strings:
 try:
     previous_day = conn.execute('SELECT * FROM days').fetchall()[-1]
 except:
-    previous_day = [0, 0, 0, 100, 0, 0]
+    previous_day = [0, 0, 0, 1000, 0, 0]
 
 t = {
     "held": previous_day[5],

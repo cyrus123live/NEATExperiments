@@ -1,0 +1,89 @@
+nodes:
+{'id': 0, 'value': 1, 'layer': 'input'}
+{'id': 1, 'value': 0, 'layer': 'input'}
+{'id': 2, 'value': 0, 'layer': 'input'}
+{'id': 3, 'value': 0, 'layer': 'input'}
+{'id': 4, 'value': 0, 'layer': 'input'}
+{'id': 5, 'value': 0, 'layer': 'input'}
+{'id': 6, 'value': 0, 'layer': 'input'}
+{'id': 7, 'value': 0, 'layer': 'input'}
+{'id': 8, 'value': 0, 'layer': 'input'}
+{'id': 9, 'value': 0, 'layer': 'input'}
+{'id': 10, 'value': 0, 'layer': 'input'}
+{'id': 12, 'value': 0, 'layer': 'output'}
+{'id': 13, 'value': 0, 'layer': 'output'}
+{'id': 14, 'value': 0, 'layer': 'output'}
+{'id': 15, 'value': 0, 'layer': 'output'}
+{'id': 16, 'value': 0, 'layer': 'output'}
+{'id': 43, 'value': 0, 'layer': 'hidden'}
+{'id': 88, 'value': 0, 'layer': 'hidden'}
+{'id': 109, 'value': 0, 'layer': 'hidden'}
+{'id': 112, 'value': 0, 'layer': 'hidden'}
+{'id': 132, 'value': 0, 'layer': 'hidden'}
+{'id': 141, 'value': 0, 'layer': 'hidden'}
+
+edges:
+{'source': 0, 'dest': 12, 'weight': -1.7688864451648305, 'enabled': True, 'innovationNum': 0}
+{'source': 1, 'dest': 12, 'weight': -0.5465193271357952, 'enabled': True, 'innovationNum': 1}
+{'source': 3, 'dest': 12, 'weight': -0.7372366783469668, 'enabled': True, 'innovationNum': 3}
+{'source': 4, 'dest': 12, 'weight': 0.05163817423644135, 'enabled': True, 'innovationNum': 4}
+{'source': 5, 'dest': 12, 'weight': -0.48652087909650427, 'enabled': True, 'innovationNum': 5}
+{'source': 6, 'dest': 12, 'weight': 0.1792510670876042, 'enabled': True, 'innovationNum': 6}
+{'source': 7, 'dest': 12, 'weight': 0.17551808838706898, 'enabled': True, 'innovationNum': 7}
+{'source': 8, 'dest': 12, 'weight': 0.051515184523229784, 'enabled': True, 'innovationNum': 8}
+{'source': 9, 'dest': 12, 'weight': -0.25120952624267867, 'enabled': True, 'innovationNum': 9}
+{'source': 10, 'dest': 12, 'weight': 0.07243958246960602, 'enabled': True, 'innovationNum': 10}
+{'source': 0, 'dest': 13, 'weight': 0.8488739632080837, 'enabled': True, 'innovationNum': 11}
+{'source': 2, 'dest': 13, 'weight': -1.460909511896586, 'enabled': True, 'innovationNum': 13}
+{'source': 3, 'dest': 13, 'weight': 0.01811992959469308, 'enabled': True, 'innovationNum': 14}
+{'source': 5, 'dest': 13, 'weight': -0.7314211267180672, 'enabled': True, 'innovationNum': 16}
+{'source': 6, 'dest': 13, 'weight': 1.6787334197122172, 'enabled': True, 'innovationNum': 17}
+{'source': 7, 'dest': 13, 'weight': -1.2810873282663744, 'enabled': True, 'innovationNum': 18}
+{'source': 9, 'dest': 13, 'weight': -0.5312278202468954, 'enabled': True, 'innovationNum': 20}
+{'source': 1, 'dest': 14, 'weight': -0.556218563303736, 'enabled': True, 'innovationNum': 23}
+{'source': 2, 'dest': 14, 'weight': 1.4381856841273346, 'enabled': True, 'innovationNum': 24}
+{'source': 3, 'dest': 14, 'weight': -1.7669977984942624, 'enabled': True, 'innovationNum': 25}
+{'source': 4, 'dest': 14, 'weight': -0.2766705516786761, 'enabled': True, 'innovationNum': 26}
+{'source': 5, 'dest': 14, 'weight': -0.3310711176697008, 'enabled': True, 'innovationNum': 27}
+{'source': 6, 'dest': 14, 'weight': -1.2512593805124586, 'enabled': True, 'innovationNum': 28}
+{'source': 8, 'dest': 14, 'weight': 0.758195998861666, 'enabled': True, 'innovationNum': 30}
+{'source': 9, 'dest': 14, 'weight': 2, 'enabled': True, 'innovationNum': 31}
+{'source': 10, 'dest': 14, 'weight': -1.8351294691775188, 'enabled': True, 'innovationNum': 32}
+{'source': 0, 'dest': 15, 'weight': 1.4651749854952922, 'enabled': True, 'innovationNum': 33}
+{'source': 1, 'dest': 15, 'weight': -0.9302190012470501, 'enabled': True, 'innovationNum': 34}
+{'source': 2, 'dest': 15, 'weight': 0.30288099428198434, 'enabled': True, 'innovationNum': 35}
+{'source': 3, 'dest': 15, 'weight': 1.5653031362219636, 'enabled': True, 'innovationNum': 36}
+{'source': 4, 'dest': 15, 'weight': 1.877422160764859, 'enabled': True, 'innovationNum': 37}
+{'source': 5, 'dest': 15, 'weight': 0.5893469901639153, 'enabled': True, 'innovationNum': 38}
+{'source': 6, 'dest': 15, 'weight': 1.2211413719227653, 'enabled': True, 'innovationNum': 39}
+{'source': 7, 'dest': 15, 'weight': 0.6409294416684603, 'enabled': True, 'innovationNum': 40}
+{'source': 8, 'dest': 15, 'weight': -0.019120258965429127, 'enabled': True, 'innovationNum': 41}
+{'source': 9, 'dest': 15, 'weight': -2, 'enabled': True, 'innovationNum': 42}
+{'source': 10, 'dest': 15, 'weight': 1.6414113451584231, 'enabled': True, 'innovationNum': 43}
+{'source': 0, 'dest': 16, 'weight': -1.4403720446159902, 'enabled': True, 'innovationNum': 44}
+{'source': 2, 'dest': 16, 'weight': 1.1141338851746285, 'enabled': True, 'innovationNum': 46}
+{'source': 3, 'dest': 16, 'weight': 1.7294169329948712, 'enabled': True, 'innovationNum': 47}
+{'source': 4, 'dest': 16, 'weight': 0.10179541015311422, 'enabled': True, 'innovationNum': 48}
+{'source': 5, 'dest': 16, 'weight': 2, 'enabled': True, 'innovationNum': 49}
+{'source': 6, 'dest': 16, 'weight': -0.5260014137554712, 'enabled': True, 'innovationNum': 50}
+{'source': 7, 'dest': 16, 'weight': -0.41214899292014917, 'enabled': True, 'innovationNum': 51}
+{'source': 8, 'dest': 16, 'weight': -0.4223937174188097, 'enabled': True, 'innovationNum': 52}
+{'source': 9, 'dest': 16, 'weight': 0.6474236687729172, 'enabled': True, 'innovationNum': 53}
+{'source': 10, 'dest': 16, 'weight': 0.4399643383382581, 'enabled': True, 'innovationNum': 54}
+{'source': 7, 'dest': 14, 'weight': 1.6361342150679823, 'enabled': True, 'innovationNum': 29}
+{'source': 1, 'dest': 13, 'weight': 1.15917324881858, 'enabled': True, 'innovationNum': 12}
+{'source': 1, 'dest': 43, 'weight': 1, 'enabled': True, 'innovationNum': 109}
+{'source': 43, 'dest': 16, 'weight': -1.658647077156417, 'enabled': True, 'innovationNum': 110}
+{'source': 2, 'dest': 88, 'weight': 1, 'enabled': True, 'innovationNum': 218}
+{'source': 88, 'dest': 109, 'weight': 1, 'enabled': True, 'innovationNum': 269}
+{'source': 109, 'dest': 12, 'weight': -1.0207219070724616, 'enabled': True, 'innovationNum': 270}
+{'source': 8, 'dest': 112, 'weight': 1, 'enabled': True, 'innovationNum': 276}
+{'source': 112, 'dest': 13, 'weight': 0.3898382883744351, 'enabled': True, 'innovationNum': 277}
+{'source': 109, 'dest': 13, 'weight': 1.3001881496337055, 'enabled': True, 'innovationNum': 301}
+{'source': 7, 'dest': 112, 'weight': 1.9640179097186121, 'enabled': True, 'innovationNum': 302}
+{'source': 112, 'dest': 43, 'weight': 1.9699904350135138, 'enabled': True, 'innovationNum': 406}
+{'source': 0, 'dest': 132, 'weight': 1.8529604669032502, 'enabled': True, 'innovationNum': 337}
+{'source': 132, 'dest': 14, 'weight': 1.9104922652727527, 'enabled': True, 'innovationNum': 338}
+{'source': 4, 'dest': 141, 'weight': 1, 'enabled': True, 'innovationNum': 359}
+{'source': 141, 'dest': 13, 'weight': -1.2344057704490896, 'enabled': True, 'innovationNum': 360}
+{'source': 10, 'dest': 13, 'weight': 0.16567525583520304, 'enabled': True, 'innovationNum': 21}

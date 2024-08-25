@@ -34,7 +34,7 @@ GENERATION_KEEP_CONSTANT = 0.16
 BABY_MUTATION_CHANCE = 1
 
 MINUTES_TRAINED_PER_DAY = 10000000
-STARTING_CASH = 1000000
+STARTING_CASH = 1000
 MAX_TRAINING_GENERATIONS = 20
 TICKER = "BTC-USD"
 
@@ -516,18 +516,18 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
                     inputs.remove(row["Close_Not_Normalized"])
                     decision = produce_move(t["phenotype"], inputs)
                     decision_index = decision.index(max(decision))
-                    if decision_index == 0 or (decision_index == 1 and t["held"] < 10):
-                        t["cash"] += t["held"] * row["Close_Not_Normalized"]
+                    if decision_index == 0 or (decision_index == 1 and t["held"] < 0.0001):
+                        t["cash"] += t["held"] * row["Close_Not_Normalized"] - (t["held"] * row["Close_Not_Normalized"] * 0.004)
                         t["held"] = 0
                     elif decision_index == 1:
-                        t["cash"] += 1 * row["Close_Not_Normalized"]
-                        t["held"] -= 1
-                    elif decision_index == 3 and t["cash"] >= 10 * row["Close_Not_Normalized"]:
-                        t["cash"] -= 1 * row["Close_Not_Normalized"]
-                        t["held"] += 1
-                    elif decision_index == 4 and t["cash"] >= 50 * row["Close_Not_Normalized"]:
-                        t["cash"] -= 5 * row["Close_Not_Normalized"]
-                        t["held"] += 5
+                        t["cash"] += 0.0001 * row["Close_Not_Normalized"] - (0.0001 * row["Close_Not_Normalized"] * 0.004)
+                        t["held"] -= 0.0001
+                    elif decision_index == 3 and t["cash"] >= 0.0001 * row["Close_Not_Normalized"]:
+                        t["cash"] -= 0.0001 * row["Close_Not_Normalized"] + (0.0001 * row["Close_Not_Normalized"] * 0.004)
+                        t["held"] += 0.0001
+                    elif decision_index == 4 and t["cash"] >= 0.001 * row["Close_Not_Normalized"]:
+                        t["cash"] -= 0.001 * row["Close_Not_Normalized"] + (0.001 * row["Close_Not_Normalized"] * 0.004)
+                        t["held"] += 0.001
 
                     t["portfolio_values"].append(t["held"] * row["Close_Not_Normalized"] + t["cash"])
 
@@ -536,6 +536,7 @@ for generation_counter in range(MAX_TRAINING_GENERATIONS):
         calculate_trader_fitness(traders)
 
         sorted_traders = sorted(traders, key=lambda x: x['fitness'], reverse=True)
+        print(f"Day {generation_counter} finished, max fitness {sorted_traders[0]['fitness']}")
         traders = next_generation(traders)
 
     except KeyboardInterrupt:
